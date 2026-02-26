@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP Macro | LRAS & AD-AS Equilibrium</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0F2439;--navy-deep:#0A1929;--teal:#0D9488;--teal-light:#14B8A6;
+  --gold:#F59E0B;--gold-light:#FCD34D;--white:#FFFFFF;--off-white:#F0F4F8;
+  --gray-100:#F1F5F9;--gray-200:#E2E8F0;--gray-400:#94A3B8;--gray-600:#475569;
+  --dark:#1E293B;--red:#EF4444;--green:#22C55E;--orange:#F97316;
+  --cream:#FFFBEB;--teal-bg:#CCFBF1;
+  --font-display:'DM Serif Display',serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+[id]{scroll-margin-top:70px}
+body{font-family:var(--font-body);color:var(--dark);background:var(--off-white);line-height:1.6;overflow-x:hidden}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,36,57,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 2rem;display:flex;align-items:center;height:60px;gap:1.5rem}
+.nav-logo{font-family:var(--font-display);color:var(--white);font-size:1.1rem;white-space:nowrap}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:0.25rem;overflow-x:auto;scrollbar-width:none;flex:1}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--gray-400);text-decoration:none;font-size:0.82rem;padding:0.4rem 0.75rem;border-radius:6px;white-space:nowrap;transition:all 0.2s;cursor:pointer}
+.nav-links a:hover,.nav-links a.active{color:var(--white);background:rgba(255,255,255,0.08)}
+.progress-bar{position:fixed;top:60px;left:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--gold));z-index:101;transition:width 0.3s}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy-deep);position:relative;overflow:hidden;padding:2rem}
+.hero::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,0.15),transparent 70%);top:-200px;right:-100px}
+.hero::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.1),transparent 70%);bottom:-100px;left:-50px}
+.hero-content{text-align:center;position:relative;z-index:1;max-width:700px}
+.hero-badge{display:inline-block;padding:0.4rem 1.2rem;border:1px solid rgba(20,184,166,0.4);border-radius:20px;color:var(--teal-light);font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:1.5rem}
+.hero h1{font-family:var(--font-display);font-size:clamp(2.5rem,6vw,4rem);color:var(--white);line-height:1.15;margin-bottom:1rem}
+.hero h1 span{color:var(--gold)}
+.hero p{color:var(--gray-400);font-size:1.1rem;margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
+.hero-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:var(--teal);color:var(--white);border:none;border-radius:8px;font-size:1rem;font-family:var(--font-body);font-weight:600;cursor:pointer;transition:all 0.25s}
+.hero-btn:hover{background:var(--teal-light);transform:translateY(-2px);box-shadow:0 8px 30px rgba(13,148,136,0.3)}
+
+/* SECTIONS */
+.section{padding:5rem 2rem;max-width:900px;margin:0 auto}
+.section-label{display:inline-block;padding:0.3rem 0.8rem;background:var(--teal-bg);color:var(--teal);font-size:0.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:4px;margin-bottom:0.75rem}
+.section-label.gold-label{background:var(--cream);color:var(--gold)}
+.section h2{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.4rem);color:var(--navy);margin-bottom:0.75rem}
+.section>p{color:var(--gray-600);font-size:1.05rem;margin-bottom:2rem;max-width:650px}
+
+/* CARDS */
+.card{background:var(--white);border-radius:12px;padding:1.75rem;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);margin-bottom:1.5rem;border:1px solid var(--gray-200)}
+.card-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem}
+.card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.card-icon.teal{background:var(--teal-bg);color:var(--teal)}
+.card-icon.gold{background:var(--cream);color:var(--gold)}
+.card-icon.red{background:#FEE2E2;color:var(--red)}
+.card-icon.navy{background:#DBEAFE;color:var(--navy)}
+.card-icon.green{background:#DCFCE7;color:var(--green)}
+.card h3{font-family:var(--font-display);font-size:1.25rem;color:var(--navy)}
+.formula-box{background:var(--navy-deep);color:var(--white);padding:1.25rem 1.5rem;border-radius:10px;font-family:var(--font-mono);font-size:1.15rem;text-align:center;margin:1rem 0;letter-spacing:0.5px}
+.formula-box span{color:var(--gold-light)}
+.highlight{background:var(--cream);border-left:4px solid var(--gold);padding:1rem 1.25rem;border-radius:0 8px 8px 0;margin:1rem 0;font-size:0.95rem}
+.highlight strong{color:var(--navy)}
+.highlight.teal-hl{background:var(--teal-bg);border-left-color:var(--teal)}
+.highlight.red-hl{background:#FEE2E2;border-left-color:var(--red)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+
+/* GRAPH */
+.graph-container{background:var(--white);border-radius:16px;padding:2rem;box-shadow:0 2px 6px rgba(0,0,0,0.06),0 8px 24px rgba(0,0,0,0.06);border:1px solid var(--gray-200);margin:1.5rem 0}
+.graph-controls{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem}
+.graph-btn{padding:0.5rem 1rem;border:2px solid var(--gray-200);border-radius:8px;background:var(--white);font-family:var(--font-body);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;color:var(--dark)}
+.graph-btn:hover{border-color:var(--teal)}
+.graph-btn.active{background:var(--teal);color:var(--white);border-color:var(--teal)}
+.graph-btn.gold-active.active{background:var(--gold);border-color:var(--gold)}
+.graph-btn.red-active.active{background:var(--red);border-color:var(--red)}
+canvas{width:100%;max-width:600px;display:block;margin:0 auto}
+.graph-caption{text-align:center;color:var(--gray-600);font-size:0.9rem;margin-top:1rem;font-style:italic}
+
+/* FLASHCARDS */
+.flashcard-deck{perspective:1000px;margin:1.5rem 0}
+.flashcard{width:100%;min-height:220px;position:relative;cursor:pointer;transform-style:preserve-3d;transition:transform 0.5s}
+.flashcard.flipped{transform:rotateY(180deg)}
+.flashcard-face{position:absolute;inset:0;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;backface-visibility:hidden;text-align:center}
+.flashcard-front{background:linear-gradient(135deg,var(--navy-deep),var(--navy));color:var(--white)}
+.flashcard-front h3{font-family:var(--font-display);font-size:1.5rem;margin-bottom:0.5rem}
+.flashcard-front p{color:var(--gray-400);font-size:0.9rem}
+.flashcard-back{background:var(--white);border:2px solid var(--teal);transform:rotateY(180deg)}
+.flashcard-back p{font-size:1.1rem;color:var(--dark);line-height:1.5}
+.flashcard-back .formula{font-family:var(--font-mono);font-size:1.3rem;color:var(--teal);font-weight:600;margin-top:0.5rem}
+.flashcard-nav{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1rem}
+.flashcard-nav button{padding:0.5rem 1.25rem;border:2px solid var(--gray-200);border-radius:8px;background:var(--white);font-family:var(--font-body);font-weight:600;cursor:pointer;transition:all 0.2s;font-size:0.9rem}
+.flashcard-nav button:hover{border-color:var(--teal);color:var(--teal)}
+.flashcard-nav span{font-weight:600;color:var(--gray-600);min-width:60px;text-align:center}
+.flip-hint{color:var(--gray-400);font-size:0.82rem;text-align:center;margin-top:0.5rem}
+
+/* QUIZ */
+.quiz-q{margin-bottom:2rem}
+.quiz-q h4{font-family:var(--font-display);font-size:1.1rem;color:var(--navy);margin-bottom:1rem}
+.quiz-options{display:flex;flex-direction:column;gap:0.5rem}
+.quiz-opt{padding:0.85rem 1.25rem;border:2px solid var(--gray-200);border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.95rem;position:relative}
+.quiz-opt:hover:not(.locked){border-color:var(--teal);background:var(--teal-bg)}
+.quiz-opt.correct{border-color:var(--green);background:#DCFCE7;color:#166534}
+.quiz-opt.wrong{border-color:var(--red);background:#FEE2E2;color:#991B1B}
+.quiz-opt.locked{cursor:default;opacity:0.7}
+.quiz-opt.correct.locked,.quiz-opt.wrong.locked{opacity:1}
+.quiz-explanation{margin-top:0.75rem;padding:0.85rem;border-radius:8px;font-size:0.9rem;display:none}
+.quiz-explanation.show{display:block;animation:fadeUp 0.3s ease}
+.quiz-explanation.correct-exp{background:#DCFCE7;color:#166534}
+.quiz-explanation.wrong-exp{background:#FEE2E2;color:#991B1B}
+.quiz-score{text-align:center;padding:2rem;background:var(--navy-deep);border-radius:16px;color:var(--white)}
+.quiz-score .big{font-family:var(--font-display);font-size:3rem;color:var(--gold-light)}
+.quiz-score p{color:var(--gray-400);margin-top:0.5rem}
+.quiz-reset{margin-top:1rem;padding:0.65rem 1.5rem;background:var(--teal);color:var(--white);border:none;border-radius:8px;font-family:var(--font-body);font-weight:600;cursor:pointer;font-size:0.95rem}
+
+/* SCENARIO GAME */
+.scenario-card{padding:1rem 1.25rem;border:2px solid var(--gray-200);border-radius:10px;margin-bottom:0.75rem;cursor:pointer;transition:all 0.2s;display:flex;justify-content:space-between;align-items:center}
+.scenario-card:hover{border-color:var(--teal);background:var(--teal-bg)}
+.scenario-card.active{border-color:var(--teal);background:var(--teal-bg)}
+.scenario-card .event{font-weight:600;color:var(--dark)}
+.scenario-card .shift{font-family:var(--font-mono);font-weight:700;font-size:1.1rem;opacity:0;transition:opacity 0.3s}
+.scenario-card.answered .shift{opacity:1}
+.scenario-card .detail{font-size:0.8rem;color:var(--gray-400);margin-top:0.25rem}
+
+/* CHAIN BUILDER */
+.chain-step{display:inline-flex;align-items:center;gap:0.35rem;padding:0.4rem 0.8rem;border-radius:6px;font-family:var(--font-mono);font-size:0.9rem;font-weight:600;margin:0.2rem}
+.chain-step.teal-step{background:var(--teal-bg);color:var(--teal)}
+.chain-step.gold-step{background:var(--cream);color:#92400E}
+.chain-step.red-step{background:#FEE2E2;color:#991B1B}
+.chain-step.navy-step{background:#DBEAFE;color:var(--navy)}
+.chain-arrow{font-size:1.1rem;color:var(--gray-400);margin:0 0.15rem}
+
+/* GAP IDENTIFIER */
+.gap-option{padding:1rem 1.5rem;border:2px solid var(--gray-200);border-radius:10px;cursor:pointer;transition:all 0.2s;text-align:center;font-weight:600;font-size:1rem}
+.gap-option:hover{border-color:var(--teal);background:var(--teal-bg)}
+.gap-option.selected{border-color:var(--teal);background:var(--teal);color:var(--white)}
+.gap-option.correct-gap{border-color:var(--green);background:#DCFCE7;color:#166534}
+.gap-option.wrong-gap{border-color:var(--red);background:#FEE2E2;color:#991B1B}
+
+/* SELF-CORRECT SIM */
+.sim-stage{padding:1.25rem;border-radius:12px;margin-bottom:1rem;border:2px solid var(--gray-200);background:var(--white);opacity:0.4;transform:translateX(-20px);transition:all 0.5s}
+.sim-stage.active-stage{opacity:1;transform:translateX(0);border-color:var(--teal)}
+.sim-stage .stage-num{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:50%;background:var(--teal);color:var(--white);font-weight:700;font-size:0.85rem;margin-right:0.5rem}
+.sim-stage h4{display:inline;font-family:var(--font-display);font-size:1.05rem;color:var(--navy)}
+.sim-stage p{margin-top:0.5rem;font-size:0.95rem;color:var(--gray-600);padding-left:2.25rem}
+.sim-btn{padding:0.65rem 1.5rem;background:var(--teal);color:var(--white);border:none;border-radius:8px;font-family:var(--font-body);font-weight:600;cursor:pointer;font-size:0.95rem;transition:all 0.2s}
+.sim-btn:hover{background:var(--teal-light)}
+.sim-btn:disabled{opacity:0.4;cursor:default}
+
+/* DIVIDER */
+.divider{padding:4rem 2rem;background:var(--navy);text-align:center;position:relative;overflow:hidden}
+.divider::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.1),transparent 70%);top:-100px;right:-50px}
+.divider h2{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.5rem);color:var(--white);margin-bottom:0.5rem;position:relative}
+.divider p{color:var(--gray-400);font-size:1.05rem;position:relative}
+
+footer{background:var(--navy-deep);color:var(--gray-400);text-align:center;padding:2rem;font-size:0.85rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity 0.6s,transform 0.6s}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  .nav{padding:0 1rem;gap:1rem}
+  .nav-links a{font-size:0.75rem;padding:0.35rem 0.6rem}
+  .section{padding:3rem 1.25rem}
+  .hero h1{font-size:2.2rem}
+  .three-col{grid-template-columns:1fr!important}
+}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+@media(max-width:640px){.three-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">AP <span>Macro</span></div>
+  <div class="nav-links">
+    <a data-target="lras" onclick="scrollToSection('lras')">LRAS</a>
+    <a data-target="lras-game" onclick="scrollToSection('lras-game')">LRAS Game</a>
+    <a data-target="adas" onclick="scrollToSection('adas')">AD-AS Graph</a>
+    <a data-target="gaps" onclick="scrollToSection('gaps')">Gaps</a>
+    <a data-target="gap-game" onclick="scrollToSection('gap-game')">Gap ID</a>
+    <a data-target="self-correct" onclick="scrollToSection('self-correct')">Self-Correct</a>
+    <a data-target="chains" onclick="scrollToSection('chains')">Chains</a>
+    <a data-target="flashcards" onclick="scrollToSection('flashcards')">Flashcards</a>
+    <a data-target="quiz" onclick="scrollToSection('quiz')">Quiz</a>
+  </div>
+</nav>
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-content">
+    <div class="hero-badge">Units 3.4 & 3.5</div>
+    <h1>LRAS & <span>AD-AS Equilibrium</span></h1>
+    <p>An interactive study guide for AP Macroeconomics. Explore the full model, identify gaps, and simulate the self-correcting economy.</p>
+    <button class="hero-btn" onclick="scrollToSection('lras')">Start Learning ↓</button>
+  </div>
+</section>
+
+<!-- ═══ PART 1: LRAS ═══ -->
+<section class="section" id="lras">
+  <div class="section-label">Unit 3.4</div>
+  <h2>Long-Run Aggregate Supply</h2>
+  <p>What happens when ALL prices in the economy, including wages and contracts, have time to fully adjust.</p>
+
+  <!-- WHY VERTICAL -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-icon teal">📊</div>
+      <h3>Why Is LRAS Vertical?</h3>
+    </div>
+    <p>In the long run, input prices are <strong>fully flexible</strong>. If the price level rises, wages and material costs rise too. Real profits don't change, so firms have no reason to produce more or less.</p>
+    <div class="formula-box">LRAS is <span>vertical</span> at <span>Y<sub>f</sub></span> (full-employment output)</div>
+    <div class="two-col" style="margin-top:1rem">
+      <div style="padding:1rem;background:var(--teal-bg);border-radius:10px;text-align:center">
+        <div style="font-size:1.5rem">🔼</div>
+        <div style="font-weight:700;color:var(--teal);margin:0.25rem 0">PL Goes Up?</div>
+        <div style="font-size:0.9rem;color:var(--gray-600)">Costs go up too. Real profits unchanged. Same output.</div>
+      </div>
+      <div style="padding:1rem;background:var(--cream);border-radius:10px;text-align:center">
+        <div style="font-size:1.5rem">🔽</div>
+        <div style="font-weight:700;color:var(--gold);margin:0.25rem 0">PL Goes Down?</div>
+        <div style="font-size:0.9rem;color:var(--gray-600)">Costs go down too. Real profits unchanged. Same output.</div>
+      </div>
+    </div>
+    <div class="highlight" style="margin-top:1rem">
+      <strong>Think of it like this:</strong> Your school has a fixed number of classrooms, teachers, and hours in the day. Raising or lowering tuition doesn't change how many students you can teach. That maximum capacity = Y<sub>f</sub>.
+    </div>
+  </div>
+
+  <!-- LRAS vs PPC -->
+  <div class="card fade-in" style="background:var(--navy-deep);color:var(--white);text-align:center;padding:2rem">
+    <div style="font-family:var(--font-display);font-size:1.6rem;color:var(--gold-light)">LRAS = The PPC of the Whole Economy</div>
+    <p style="color:var(--gray-400);margin-top:0.75rem;font-size:1rem;max-width:550px;margin-left:auto;margin-right:auto">Both represent the economy's <strong style="color:var(--teal-light)">maximum sustainable output</strong> using all resources efficiently. Whatever shifts the PPC outward also shifts LRAS right.</p>
+  </div>
+
+  <!-- WHAT SHIFTS LRAS -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-icon gold">🔄</div>
+      <h3>What Shifts LRAS?</h3>
+    </div>
+    <p>LRAS shifts when the economy's <strong>productive capacity</strong> changes. Not costs. Capacity.</p>
+    <div class="two-col" style="margin-top:1rem">
+      <div>
+        <div style="padding:1rem;background:#DCFCE7;border-radius:10px;margin-bottom:0.75rem">
+          <div style="font-weight:700;color:#166534;margin-bottom:0.5rem">📈 LRAS Shifts RIGHT</div>
+          <div style="font-size:0.9rem;color:#166534">
+            <strong>More/better resources:</strong> Immigration, new oil fields discovered<br>
+            <strong>Technology:</strong> AI revolution, automation breakthroughs<br>
+            <strong>Human capital:</strong> More college grads, better training<br>
+            <strong>Institutions:</strong> Property rights, open trade, rule of law
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="padding:1rem;background:#FEE2E2;border-radius:10px;margin-bottom:0.75rem">
+          <div style="font-weight:700;color:#991B1B;margin-bottom:0.5rem">📉 LRAS Shifts LEFT</div>
+          <div style="font-size:0.9rem;color:#991B1B">
+            <strong>Resource destruction:</strong> War, natural disasters<br>
+            <strong>Brain drain:</strong> Skilled workers emigrating<br>
+            <strong>Institutional collapse:</strong> Corruption, instability<br>
+            <strong>Resource depletion:</strong> Running out of key resources
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="highlight teal-hl">
+      <strong>Key Difference:</strong> SRAS shifts from changes in <em>costs</em> (wages, oil prices, taxes). LRAS shifts from changes in <em>capacity</em> (resources, technology, human capital). Some things, like technology, shift BOTH.
+    </div>
+  </div>
+</section>
+
+<!-- LRAS SHIFT GAME -->
+<section class="section" id="lras-game">
+  <div class="section-label">Interactive</div>
+  <h2>LRAS Shift Game</h2>
+  <p>Click each scenario to reveal which direction LRAS shifts. Think first, then click to check!</p>
+  <div id="lrasGameContainer" class="fade-in"></div>
+  <div style="text-align:center;margin-top:1rem;color:var(--gray-400);font-size:0.9rem" id="lrasScore">0 of 10 revealed</div>
+</section>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <h2>Part 2: AD-AS Equilibrium</h2>
+  <p>Where Aggregate Demand meets Aggregate Supply. The full macro model.</p>
+</div>
+
+<!-- ═══ INTERACTIVE AD-AS GRAPH ═══ -->
+<section class="section" id="adas">
+  <div class="section-label gold-label">Unit 3.5</div>
+  <h2>Interactive AD-AS Model</h2>
+  <p>Click the buttons to see how shifts in AD and SRAS create different outcomes. Watch the equilibrium move!</p>
+
+  <div class="graph-container fade-in">
+    <div class="graph-controls">
+      <button class="graph-btn active" onclick="setGraph('base',this)">⚖️ Equilibrium</button>
+      <button class="graph-btn" onclick="setGraph('ad-right',this)">AD → Right</button>
+      <button class="graph-btn red-active" onclick="setGraph('ad-left',this)">AD ← Left</button>
+      <button class="graph-btn" onclick="setGraph('sras-right',this)">SRAS → Right</button>
+      <button class="graph-btn gold-active" onclick="setGraph('sras-left',this)">SRAS ← Left</button>
+      <button class="graph-btn" onclick="setGraph('lras-right',this)">LRAS → Right</button>
+    </div>
+    <canvas id="adAsCanvas" width="600" height="400"></canvas>
+    <div class="graph-caption" id="graphCaption">Long-run equilibrium: AD, SRAS, and LRAS all intersect at Y<sub>f</sub>.</div>
+  </div>
+</section>
+
+<!-- ═══ OUTPUT GAPS ═══ -->
+<section class="section" id="gaps">
+  <div class="section-label gold-label">Key Concept</div>
+  <h2>Output Gaps Explained</h2>
+  <p>When the short-run equilibrium doesn't line up with full employment, we have an output gap.</p>
+
+  <div class="three-col">
+    <div class="card fade-in" style="border-top:4px solid var(--red)">
+      <h3 style="color:var(--red);font-size:1.1rem">📉 Recessionary Gap</h3>
+      <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--red);margin:0.75rem 0;font-weight:700">GDP < Y<sub>f</sub></div>
+      <p style="font-size:0.9rem"><strong>High unemployment</strong> (above natural rate)<br><strong>Low/falling prices</strong><br>Businesses have excess capacity</p>
+      <div style="margin-top:0.75rem;padding:0.75rem;background:#FEE2E2;border-radius:8px;font-size:0.85rem;color:#991B1B">
+        <strong>Real life:</strong> COVID lockdowns in 2020. Massive unemployment, businesses shut down.
+      </div>
+    </div>
+    <div class="card fade-in" style="border-top:4px solid var(--green)">
+      <h3 style="color:var(--green);font-size:1.1rem">⚖️ Long-Run Equilibrium</h3>
+      <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--green);margin:0.75rem 0;font-weight:700">GDP = Y<sub>f</sub></div>
+      <p style="font-size:0.9rem"><strong>At natural rate</strong> of unemployment<br><strong>Stable prices</strong><br>All three curves intersect</p>
+      <div style="margin-top:0.75rem;padding:0.75rem;background:#DCFCE7;border-radius:8px;font-size:0.85rem;color:#166534">
+        <strong>Real life:</strong> Mid-2019 economy. Low unemployment, moderate inflation, steady growth.
+      </div>
+    </div>
+    <div class="card fade-in" style="border-top:4px solid var(--gold)">
+      <h3 style="color:var(--gold);font-size:1.1rem">📈 Inflationary Gap</h3>
+      <div style="font-family:var(--font-mono);font-size:1.2rem;color:var(--gold);margin:0.75rem 0;font-weight:700">GDP > Y<sub>f</sub></div>
+      <p style="font-size:0.9rem"><strong>Very low unemployment</strong> (below natural rate)<br><strong>Rising prices</strong><br>Economy is "overheating"</p>
+      <div style="margin-top:0.75rem;padding:0.75rem;background:var(--cream);border-radius:8px;font-size:0.85rem;color:#92400E">
+        <strong>Real life:</strong> Post-COVID 2021-22. Stimulus spending, 9% inflation, "Now Hiring" everywhere.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGFLATION -->
+  <div class="card fade-in" style="border-left:4px solid var(--red);margin-top:1.5rem">
+    <div class="card-header">
+      <div class="card-icon red">⚠️</div>
+      <h3>Stagflation: The Worst of Both Worlds</h3>
+    </div>
+    <p>When SRAS shifts LEFT, you get <strong>rising prices AND falling output</strong> at the same time. This is called <strong>stagflation</strong> (stagnation + inflation).</p>
+    <div class="formula-box">SRAS ← Left → <span>PL ↑</span> + <span>GDP ↓</span> = Stagflation</div>
+    <div class="highlight red-hl">
+      <strong>1970s Oil Crisis:</strong> OPEC cut oil supply, gas prices skyrocketed, and the U.S. had both high unemployment AND high inflation simultaneously. It's the scenario policymakers fear most because fixing one problem makes the other worse.
+    </div>
+  </div>
+</section>
+
+<!-- GAP IDENTIFIER GAME -->
+<section class="section" id="gap-game">
+  <div class="section-label">Interactive</div>
+  <h2>Name That Gap!</h2>
+  <p>Read the scenario and identify the type of output gap. Test your understanding!</p>
+  <div id="gapGameContainer" class="fade-in"></div>
+  <div style="text-align:center;margin-top:1rem">
+    <span id="gapScoreDisplay" style="font-family:var(--font-mono);font-weight:700;color:var(--teal);font-size:1.2rem"></span>
+  </div>
+</section>
+
+<!-- SELF-CORRECTING ECONOMY -->
+<section class="section" id="self-correct">
+  <div class="section-label gold-label">Key Concept</div>
+  <h2>Self-Correcting Economy Simulator</h2>
+  <p>In the long run, wages adjust and SRAS shifts to bring the economy back to Y<sub>f</sub>. Click "Next Step" to see it happen.</p>
+
+  <div class="card fade-in">
+    <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+      <button class="sim-btn" id="simRecBtn" onclick="startSim('recession')" style="background:var(--red)">▶ Recessionary Gap</button>
+      <button class="sim-btn" id="simInfBtn" onclick="startSim('inflation')">▶ Inflationary Gap</button>
+      <button class="sim-btn" id="simNextBtn" onclick="nextSimStep()" style="background:var(--gold)" disabled>Next Step →</button>
+      <button class="sim-btn" id="simResetBtn" onclick="resetSim()" style="background:var(--gray-400)">↺ Reset</button>
+    </div>
+    <div id="simStages"></div>
+  </div>
+</section>
+
+<!-- CAUSE & EFFECT CHAINS -->
+<div class="divider">
+  <h2>Cause & Effect Chains</h2>
+  <p>Master these for the AP exam. Every arrow matters.</p>
+</div>
+
+<section class="section" id="chains">
+  <div class="section-label">Reference</div>
+  <h2>AD-AS Chain Reference</h2>
+  <p>Click any chain to expand and study the logic. These are the exact sequences the AP exam tests.</p>
+  <div id="chainContainer" class="fade-in"></div>
+</section>
+
+<!-- FLASHCARDS -->
+<section class="section" id="flashcards">
+  <div class="section-label">Study Tool</div>
+  <h2>Flashcards</h2>
+  <p>Click the card to flip it. Use the arrows to move through all 14 cards.</p>
+  <div class="flashcard-deck fade-in">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-face flashcard-front">
+        <h3 id="fc-front-title"></h3>
+        <p id="fc-front-sub"></p>
+      </div>
+      <div class="flashcard-face flashcard-back">
+        <p id="fc-back-text"></p>
+        <div class="formula" id="fc-back-formula"></div>
+      </div>
+    </div>
+    <div class="flip-hint">Click to flip</div>
+    <div class="flashcard-nav">
+      <button onclick="prevCard()">← Prev</button>
+      <span id="fcCounter">1 / 14</span>
+      <button onclick="nextCard()">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="section" id="quiz">
+  <div class="section-label">Test Yourself</div>
+  <h2>Unit Review Quiz</h2>
+  <p>10 questions on LRAS and AD-AS Equilibrium. No peeking at your notes!</p>
+  <div id="quizContainer" class="fade-in"></div>
+  <div id="quizScore" style="display:none"></div>
+</section>
+
+<footer>
+  <p>Mr. Bassin's AP Macroeconomics | Units 3.4 & 3.5 | LRAS & AD-AS Equilibrium</p>
+</footer>
+
+<script>
+// ══════════════════════════════════════════
+// SMOOTH SCROLL
+// ══════════════════════════════════════════
+function scrollToSection(id){
+  const el=document.getElementById(id);
+  if(el){
+    const top=el.getBoundingClientRect().top+window.pageYOffset-70;
+    window.scrollTo({top,behavior:'smooth'});
+  }
+}
+
+// ══════════════════════════════════════════
+// AD-AS INTERACTIVE GRAPH
+// ══════════════════════════════════════════
+const graphCaptions={
+  'base':'Long-run equilibrium: AD, SRAS, and LRAS all intersect at Y\u2086. Economy is at full employment.',
+  'ad-right':'AD shifts RIGHT \u2192 PL rises, Real GDP rises past Y\u2086. Inflationary gap forms. Low unemployment, rising prices.',
+  'ad-left':'AD shifts LEFT \u2192 PL falls, Real GDP falls below Y\u2086. Recessionary gap forms. High unemployment, falling prices.',
+  'sras-right':'SRAS shifts RIGHT \u2192 PL falls AND Real GDP rises. Lower costs = more output at lower prices. Best outcome!',
+  'sras-left':'SRAS shifts LEFT \u2192 PL rises AND Real GDP falls. This is STAGFLATION: inflation + recession at the same time.',
+  'lras-right':'LRAS shifts RIGHT \u2192 Economy\'s full-employment output grows. This is long-run economic growth (like PPC shifting out).'
+};
+
+function setGraph(mode,btn){
+  document.querySelectorAll('.graph-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('graphCaption').innerHTML=graphCaptions[mode];
+  drawGraph(mode);
+}
+
+function drawGraph(mode){
+  const c=document.getElementById('adAsCanvas');
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const ox=70,oy=H-55,gw=W-110,gh=H-90;
+
+  // Axes
+  ctx.strokeStyle='#1E293B';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(ox,25);ctx.lineTo(ox,oy);ctx.lineTo(W-25,oy);ctx.stroke();
+  ctx.fillStyle='#1E293B';ctx.font='bold 14px DM Sans';
+  ctx.fillText('PL',ox-30,42);
+  ctx.fillText('Real GDP',W-95,oy+32);
+
+  function drawLine(x1,y1,x2,y2,color,w,dash){
+    ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash||[]);
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+  }
+  function drawDot(x,y,color,r){
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r||6,0,Math.PI*2);ctx.fill();
+  }
+  function label(text,x,y,color,bold,size){
+    ctx.fillStyle=color;ctx.font=(bold?'bold ':'')+(size||13)+'px DM Sans';ctx.fillText(text,x,y);
+  }
+
+  const lx=ox+gw*0.55;
+  const sX1=ox+25,sY1=oy-35,sX2=ox+gw-5,sY2=45;
+  const aX1=ox+25,aY1=45,aX2=ox+gw-5,aY2=oy-35;
+
+  // LRAS
+  if(mode==='lras-right'){
+    drawLine(lx,35,lx,oy,'#94A3B8',2,[6,4]);
+    label('LRAS',lx+5,48,'#94A3B8',false,12);
+    label('Y\u2086',lx-10,oy+18,'#94A3B8',false,12);
+    const lx2=lx+70;
+    drawLine(lx2,35,lx2,oy,'#0F2439',3);
+    label('LRAS\u2081',lx2+5,48,'#0F2439',true);
+    label('Y\u2086\u2081',lx2-12,oy+18,'#0F2439',true,12);
+    // Arrow
+    ctx.strokeStyle='#22C55E';ctx.lineWidth=2;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(lx+15,gh*0.35+25);ctx.lineTo(lx2-10,gh*0.35+25);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lx2-10,gh*0.35+25);ctx.lineTo(lx2-18,gh*0.35+20);ctx.moveTo(lx2-10,gh*0.35+25);ctx.lineTo(lx2-18,gh*0.35+30);ctx.stroke();
+  } else {
+    drawLine(lx,35,lx,oy,'#0F2439',2.5);
+    label('LRAS',lx+5,48,'#0F2439',true);
+    label('Y\u2086',lx-10,oy+18,'#0F2439',true,12);
+  }
+
+  // SRAS
+  if(mode==='sras-right'){
+    drawLine(sX1,sY1,sX2,sY2,'#94A3B8',2,[6,4]);
+    label('SRAS',sX2-15,sY2-8,'#94A3B8',false,12);
+    drawLine(sX1+50,sY1,sX2+50,sY2,'#22C55E',3);
+    label('SRAS\u2081',sX2+35,sY2-8,'#22C55E',true);
+  } else if(mode==='sras-left'){
+    drawLine(sX1,sY1,sX2,sY2,'#94A3B8',2,[6,4]);
+    label('SRAS',sX2-15,sY2-8,'#94A3B8',false,12);
+    drawLine(sX1-50,sY1,sX2-50,sY2,'#EF4444',3);
+    label('SRAS\u2081',sX2-65,sY2-8,'#EF4444',true);
+  } else {
+    drawLine(sX1,sY1,sX2,sY2,'#F59E0B',3);
+    label('SRAS',sX2-15,sY2-8,'#F59E0B',true);
+  }
+
+  // AD
+  if(mode==='ad-right'){
+    drawLine(aX1,aY1,aX2,aY2,'#94A3B8',2,[6,4]);
+    label('AD',aX2-10,aY2+15,'#94A3B8',false,12);
+    drawLine(aX1+60,aY1,aX2+60,aY2,'#22C55E',3);
+    label('AD\u2081',aX2+52,aY2+15,'#22C55E',true);
+  } else if(mode==='ad-left'){
+    drawLine(aX1,aY1,aX2,aY2,'#94A3B8',2,[6,4]);
+    label('AD',aX2-10,aY2+15,'#94A3B8',false,12);
+    drawLine(aX1-60,aY1,aX2-60,aY2,'#EF4444',3);
+    label('AD\u2081',aX2-70,aY2+15,'#EF4444',true);
+  } else {
+    drawLine(aX1,aY1,aX2,aY2,'#0D9488',3);
+    label('AD',aX2-10,aY2+15,'#0D9488',true);
+  }
+
+  // Equilibrium dots
+  if(mode==='base'||mode==='lras-right'){
+    drawDot(lx,oy-gh*0.5,'#1E293B',7);
+    drawLine(ox,oy-gh*0.5,lx,oy-gh*0.5,'#94A3B8',1,[4,4]);
+    label('PL\u2091',ox-30,oy-gh*0.5+5,'#475569',false,11);
+  } else if(mode==='ad-right'){
+    drawDot(lx,oy-gh*0.5,'#94A3B8',5);
+    const nx=lx+35,ny=oy-gh*0.58;
+    drawDot(nx,ny,'#22C55E',7);
+    drawLine(ox,ny,nx,ny,'#22C55E',1,[4,4]);
+    label('PL\u2081\u2191',ox-32,ny+4,'#22C55E',true,11);
+  } else if(mode==='ad-left'){
+    drawDot(lx,oy-gh*0.5,'#94A3B8',5);
+    const nx=lx-35,ny=oy-gh*0.42;
+    drawDot(nx,ny,'#EF4444',7);
+    drawLine(ox,ny,nx,ny,'#EF4444',1,[4,4]);
+    label('PL\u2081\u2193',ox-32,ny+4,'#EF4444',true,11);
+  } else if(mode==='sras-right'){
+    drawDot(lx,oy-gh*0.5,'#94A3B8',5);
+    const nx=lx+30,ny=oy-gh*0.55;
+    drawDot(nx,ny,'#22C55E',7);
+  } else if(mode==='sras-left'){
+    drawDot(lx,oy-gh*0.5,'#94A3B8',5);
+    const nx=lx-30,ny=oy-gh*0.45;
+    drawDot(nx,ny,'#EF4444',7);
+    label('Stagflation!',nx-50,ny-12,'#EF4444',true,13);
+  }
+}
+drawGraph('base');
+
+// ══════════════════════════════════════════
+// LRAS SHIFT GAME
+// ══════════════════════════════════════════
+const lrasScenarios=[
+  {event:'Millions of immigrants enter the workforce',shift:'RIGHT →',color:'var(--green)',detail:'More labor resources = more productive capacity'},
+  {event:'AI technology doubles worker productivity across industries',shift:'RIGHT →',color:'var(--green)',detail:'Better technology = more output from same inputs'},
+  {event:'A massive earthquake destroys factories and infrastructure',shift:'← LEFT',color:'var(--red)',detail:'Capital destroyed = less productive capacity'},
+  {event:'Government invests heavily in public education and job training',shift:'RIGHT →',color:'var(--green)',detail:'Better human capital = more productive workers'},
+  {event:'Skilled workers flee the country due to political instability',shift:'← LEFT',color:'var(--red)',detail:'Brain drain = loss of human capital'},
+  {event:'New oil reserves are discovered domestically',shift:'RIGHT →',color:'var(--green)',detail:'More natural resources = greater capacity'},
+  {event:'A prolonged war destroys roads, bridges, and power plants',shift:'← LEFT',color:'var(--red)',detail:'Infrastructure destruction = less capacity'},
+  {event:'Property rights and rule of law are strengthened',shift:'RIGHT →',color:'var(--green)',detail:'Better institutions = more investment and growth'},
+  {event:'Climate change reduces agricultural land permanently',shift:'← LEFT',color:'var(--red)',detail:'Resource depletion = less productive capacity'},
+  {event:'A medical breakthrough extends healthy working years by a decade',shift:'RIGHT →',color:'var(--green)',detail:'Larger effective labor force = more capacity'},
+];
+
+let lrasRevealed=0;
+function buildLrasGame(){
+  const cont=document.getElementById('lrasGameContainer');
+  cont.innerHTML='';
+  lrasScenarios.forEach((s,i)=>{
+    const div=document.createElement('div');
+    div.className='scenario-card';
+    div.innerHTML=`<div><span class="event">${s.event}</span><div class="detail">${s.detail}</div></div><span class="shift" style="color:${s.color}">${s.shift}</span>`;
+    div.addEventListener('click',()=>{
+      if(!div.classList.contains('answered')){
+        div.classList.add('answered');
+        lrasRevealed++;
+        document.getElementById('lrasScore').textContent=`${lrasRevealed} of ${lrasScenarios.length} revealed`;
+      }
+    });
+    cont.appendChild(div);
+  });
+}
+buildLrasGame();
+
+// ══════════════════════════════════════════
+// GAP IDENTIFIER GAME
+// ══════════════════════════════════════════
+const gapScenarios=[
+  {scenario:'Unemployment is at 9%, factories are running at 60% capacity, and prices are falling.',answer:'recession',explain:'GDP is well below Y\u2086. High unemployment + low prices = recessionary gap.'},
+  {scenario:'"Now Hiring" signs everywhere, wages bidding up, inflation hits 8%, everyone has a job.',answer:'inflation',explain:'GDP is above Y\u2086. Economy is overheating with very low unemployment and rising prices.'},
+  {scenario:'Economy is growing steadily at 2.5%, unemployment is at 4.5% (natural rate), inflation is 2%.',answer:'equilibrium',explain:'GDP = Y\u2086. All indicators are stable at their long-run sustainable levels.'},
+  {scenario:'Oil prices triple due to a supply shock. Prices surge but businesses lay off workers.',answer:'stagflation',explain:'SRAS shifted left. Rising prices + falling output + rising unemployment = stagflation.'},
+  {scenario:'After stimulus checks go out, consumer spending skyrockets. Prices rise, GDP overshoots potential.',answer:'inflation',explain:'AD shifted right past LRAS. Too much spending = inflationary gap.'},
+  {scenario:'During COVID lockdowns, millions lose jobs, spending collapses, businesses shut down.',answer:'recession',explain:'Massive AD shift left. GDP far below Y\u2086 = deep recessionary gap.'},
+  {scenario:'New tariffs raise import costs. Companies pass costs to consumers. Output slows.',answer:'stagflation',explain:'Higher input costs shift SRAS left. Prices up + output down = stagflation.'},
+  {scenario:'After years of balanced growth, the Fed is satisfied with all major economic indicators.',answer:'equilibrium',explain:'AD, SRAS, and LRAS intersect at Y\u2086. Long-run equilibrium achieved.'},
+];
+
+let gapCorrect=0,gapTotal=0,gapCurrent=0;
+function buildGapGame(){
+  gapCorrect=0;gapTotal=0;gapCurrent=0;
+  showGapQ();
+}
+function showGapQ(){
+  if(gapCurrent>=gapScenarios.length){
+    document.getElementById('gapGameContainer').innerHTML=`
+      <div style="text-align:center;padding:2rem;background:var(--navy-deep);border-radius:16px;color:var(--white)">
+        <div style="font-family:var(--font-display);font-size:3rem;color:var(--gold-light)">${gapCorrect} / ${gapScenarios.length}</div>
+        <p style="color:var(--gray-400);margin-top:0.5rem">${gapCorrect>=7?'Excellent! You really know your gaps!':gapCorrect>=5?'Good job! Review the ones you missed.':'Keep studying the gap types and try again.'}</p>
+        <button class="sim-btn" onclick="buildGapGame()" style="margin-top:1rem">Try Again</button>
+      </div>`;
+    document.getElementById('gapScoreDisplay').textContent='';
+    return;
+  }
+  const g=gapScenarios[gapCurrent];
+  const cont=document.getElementById('gapGameContainer');
+  cont.innerHTML=`
+    <div class="card" style="margin-bottom:1rem">
+      <h4 style="font-family:var(--font-display);color:var(--navy);margin-bottom:0.75rem">Scenario ${gapCurrent+1} of ${gapScenarios.length}</h4>
+      <p style="font-size:1.05rem;margin-bottom:1.25rem">${g.scenario}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem" id="gapOptions">
+        <div class="gap-option" onclick="checkGap('recession',this)">📉 Recessionary Gap</div>
+        <div class="gap-option" onclick="checkGap('inflation',this)">📈 Inflationary Gap</div>
+        <div class="gap-option" onclick="checkGap('equilibrium',this)">⚖️ Long-Run Equilibrium</div>
+        <div class="gap-option" onclick="checkGap('stagflation',this)">⚠️ Stagflation</div>
+      </div>
+      <div id="gapExplain" style="margin-top:1rem;display:none"></div>
+    </div>`;
+  document.getElementById('gapScoreDisplay').textContent=`Score: ${gapCorrect}/${gapTotal}`;
+}
+function checkGap(answer,el){
+  const opts=document.querySelectorAll('.gap-option');
+  if(opts[0].classList.contains('locked'))return;
+  opts.forEach(o=>{o.style.pointerEvents='none';o.classList.add('locked')});
+  const g=gapScenarios[gapCurrent];
+  const correct=answer===g.answer;
+  if(correct){el.classList.add('correct-gap');gapCorrect++;}
+  else{
+    el.classList.add('wrong-gap');
+    opts.forEach(o=>{if(o.textContent.toLowerCase().includes(g.answer.slice(0,5)))o.classList.add('correct-gap')});
+  }
+  gapTotal++;
+  const exp=document.getElementById('gapExplain');
+  exp.style.display='block';
+  exp.innerHTML=`<div style="padding:0.85rem;border-radius:8px;font-size:0.9rem;background:${correct?'#DCFCE7':'#FEE2E2'};color:${correct?'#166534':'#991B1B'}">${correct?'✓ Correct!':'✗ Incorrect.'} ${g.explain}</div>
+    <button class="sim-btn" style="margin-top:0.75rem" onclick="gapCurrent++;showGapQ()">Next →</button>`;
+  document.getElementById('gapScoreDisplay').textContent=`Score: ${gapCorrect}/${gapTotal}`;
+}
+buildGapGame();
+
+// ══════════════════════════════════════════
+// SELF-CORRECTING ECONOMY SIMULATOR
+// ══════════════════════════════════════════
+const simData={
+  recession:[
+    {title:'Economy in Recession',text:'AD has shifted left. Real GDP is below Y\u2086. Unemployment is HIGH. There are more workers than jobs.'},
+    {title:'Workers Accept Lower Wages',text:'With so many people out of work, competition for jobs drives wages DOWN. Workers accept lower pay just to get hired.'},
+    {title:'Per-Unit Costs Fall',text:'Lower wages mean lower production costs for businesses. It becomes cheaper to produce each unit of output.'},
+    {title:'SRAS Shifts Right',text:'Lower costs mean firms are willing to produce more at every price level. SRAS shifts RIGHT toward Y\u2086.'},
+    {title:'Back to Full Employment',text:'The economy returns to Y\u2086 at a LOWER price level. Self-correction complete! No government action needed (in theory).'},
+  ],
+  inflation:[
+    {title:'Economy Overheating',text:'AD has shifted right past LRAS. Real GDP is above Y\u2086. Unemployment is VERY LOW. Employers compete for scarce workers.'},
+    {title:'Workers Demand Higher Wages',text:'With so few unemployed workers, employees have bargaining power. They demand HIGHER wages and businesses must pay up.'},
+    {title:'Per-Unit Costs Rise',text:'Higher wages increase production costs. It becomes more expensive for firms to produce each unit of output.'},
+    {title:'SRAS Shifts Left',text:'Higher costs mean firms produce LESS at every price level. SRAS shifts LEFT back toward Y\u2086.'},
+    {title:'Back to Full Employment',text:'The economy returns to Y\u2086 at a HIGHER price level. Self-correction complete, but prices are permanently higher.'},
+  ]
+};
+let simMode=null,simStep=0;
+function startSim(mode){
+  simMode=mode;simStep=0;
+  document.getElementById('simNextBtn').disabled=false;
+  renderSimStep();
+}
+function nextSimStep(){
+  if(simStep<simData[simMode].length-1){simStep++;renderSimStep();}
+  if(simStep>=simData[simMode].length-1)document.getElementById('simNextBtn').disabled=true;
+}
+function resetSim(){
+  simMode=null;simStep=0;
+  document.getElementById('simStages').innerHTML='<p style="color:var(--gray-400);text-align:center;padding:2rem">Choose a gap type above to begin the simulation.</p>';
+  document.getElementById('simNextBtn').disabled=true;
+}
+function renderSimStep(){
+  const stages=document.getElementById('simStages');
+  stages.innerHTML='';
+  simData[simMode].forEach((s,i)=>{
+    const div=document.createElement('div');
+    div.className='sim-stage'+(i<=simStep?' active-stage':'');
+    div.innerHTML=`<span class="stage-num" style="background:${simMode==='recession'?'var(--red)':'var(--gold)'}">${i+1}</span><h4>${s.title}</h4><p>${i<=simStep?s.text:'...'}</p>`;
+    stages.appendChild(div);
+  });
+}
+resetSim();
+
+// ══════════════════════════════════════════
+// CAUSE & EFFECT CHAINS
+// ══════════════════════════════════════════
+const chainsData=[
+  {title:'AD Increases',chain:['C↑, I↑, G↑, or Xn↑','AD shifts RIGHT','GDP_R ↑ & PL ↑','u% ↓ & π% ↑'],colors:['teal-step','navy-step','gold-step','red-step'],summary:'More spending → more output & higher prices → less unemployment & more inflation'},
+  {title:'AD Decreases',chain:['C↓, I↓, G↓, or Xn↓','AD shifts LEFT','GDP_R ↓ & PL ↓','u% ↑ & π% ↓'],colors:['red-step','navy-step','red-step','teal-step'],summary:'Less spending → less output & lower prices → more unemployment & less inflation'},
+  {title:'SRAS Increases',chain:['Input costs ↓ or Productivity ↑','SRAS shifts RIGHT','GDP_R ↑ & PL ↓','u% ↓ & π% ↓'],colors:['teal-step','navy-step','teal-step','teal-step'],summary:'Lower costs → more output & lower prices → best outcome! Growth without inflation.'},
+  {title:'SRAS Decreases (Stagflation)',chain:['Input costs ↑ or Productivity ↓','SRAS shifts LEFT','GDP_R ↓ & PL ↑','u% ↑ & π% ↑'],colors:['red-step','navy-step','red-step','red-step'],summary:'Higher costs → less output & higher prices → worst outcome! Recession + inflation.'},
+  {title:'Self-Correction: Recession',chain:['u% is high','Workers accept lower wages (w↓)','Per-unit costs fall','SRAS shifts RIGHT','Back to Y\u2086 at lower PL'],colors:['red-step','gold-step','teal-step','navy-step','teal-step'],summary:'In the long run, flexible wages bring the economy back to full employment.'},
+  {title:'Self-Correction: Inflation',chain:['u% is very low','Workers demand higher wages (w↑)','Per-unit costs rise','SRAS shifts LEFT','Back to Y\u2086 at higher PL'],colors:['gold-step','red-step','red-step','navy-step','gold-step'],summary:'In the long run, rising wages bring the overheating economy back to Y\u2086.'},
+  {title:'Expansionary Fiscal Policy',chain:['T↓ → DI↑ → C↑  OR  G↑','AD shifts RIGHT','GDP_R ↑ & PL ↑','u% ↓ & π% ↑'],colors:['teal-step','navy-step','gold-step','gold-step'],summary:'Tax cuts or more government spending stimulate aggregate demand.'},
+  {title:'Contractionary Fiscal Policy',chain:['T↑ → DI↓ → C↓  OR  G↓','AD shifts LEFT','GDP_R ↓ & PL ↓','u% ↑ & π% ↓'],colors:['red-step','navy-step','teal-step','teal-step'],summary:'Tax increases or spending cuts cool down aggregate demand.'},
+];
+
+function buildChains(){
+  const cont=document.getElementById('chainContainer');
+  cont.innerHTML='';
+  chainsData.forEach((ch,i)=>{
+    const card=document.createElement('div');
+    card.className='card';
+    card.style.cursor='pointer';
+    let chainHtml=ch.chain.map((step,j)=>{
+      return `<span class="chain-step ${ch.colors[j]}">${step}</span>${j<ch.chain.length-1?'<span class="chain-arrow">→</span>':''}`;
+    }).join('');
+    card.innerHTML=`
+      <div class="card-header" onclick="this.parentElement.querySelector('.chain-detail').classList.toggle('show-chain')">
+        <div class="card-icon ${i<4?'teal':'gold'}" style="font-size:0.9rem;font-weight:700">${i+1}</div>
+        <h3 style="font-size:1.1rem">${ch.title}</h3>
+        <span style="margin-left:auto;color:var(--gray-400);font-size:1.2rem">▾</span>
+      </div>
+      <div class="chain-detail" style="display:none;padding-top:0.5rem">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.2rem;margin-bottom:0.75rem">${chainHtml}</div>
+        <p style="font-size:0.9rem;color:var(--gray-600);font-style:italic">${ch.summary}</p>
+      </div>`;
+    cont.appendChild(card);
+  });
+}
+buildChains();
+
+// Toggle chain detail
+document.addEventListener('click',function(e){
+  const header=e.target.closest('.card-header');
+  if(header && header.parentElement.querySelector('.chain-detail')){
+    const detail=header.parentElement.querySelector('.chain-detail');
+    detail.style.display=detail.style.display==='none'?'block':'none';
+  }
+});
+
+// ══════════════════════════════════════════
+// FLASHCARDS
+// ══════════════════════════════════════════
+const flashcards=[
+  {front:'Why is LRAS vertical?',sub:'Long-Run Aggregate Supply',back:'In the long run, ALL prices (including wages) adjust. Real profits don\'t change, so output stays at full employment regardless of PL.',formula:'Output = Y\u2086 always'},
+  {front:'What shifts LRAS?',sub:'4 Shifters',back:'Changes in the economy\'s CAPACITY: (1) Resources (land, labor, capital), (2) Technology, (3) Human capital/education, (4) Institutions & incentives.',formula:'Same as PPC shifters!'},
+  {front:'LRAS vs. SRAS shifts?',sub:'Key Difference',back:'SRAS shifts from cost changes (wages, oil, taxes). LRAS shifts from capacity changes (resources, tech, education). Technology shifts BOTH.',formula:''},
+  {front:'Long-run equilibrium?',sub:'AD-AS Model',back:'Where AD, SRAS, and LRAS ALL intersect at the same point. Economy is at Y\u2086 with stable prices.',formula:'GDP = Y\u2086, PL stable'},
+  {front:'What is a recessionary gap?',sub:'Output below Y\u2086',back:'AD & SRAS intersect to the LEFT of LRAS. GDP < Y\u2086. High unemployment, low inflation.',formula:'GDP < Y\u2086, u% > NRU'},
+  {front:'What is an inflationary gap?',sub:'Output above Y\u2086',back:'AD & SRAS intersect to the RIGHT of LRAS. GDP > Y\u2086. Low unemployment, rising prices.',formula:'GDP > Y\u2086, u% < NRU'},
+  {front:'What is stagflation?',sub:'The worst combo',back:'SRAS shifts LEFT: prices RISE and output FALLS simultaneously. High unemployment AND high inflation.',formula:'SRAS ← : PL↑ + GDP↓'},
+  {front:'Self-correction: Recession',sub:'How the economy heals',back:'High u% → workers accept lower wages → costs fall → SRAS shifts RIGHT → back to Y\u2086 at lower PL.',formula:'u%↑ → w↓ → SRAS→'},
+  {front:'Self-correction: Inflation',sub:'How overheating cools',back:'Low u% → workers demand higher wages → costs rise → SRAS shifts LEFT → back to Y\u2086 at higher PL.',formula:'u%↓ → w↑ → SRAS←'},
+  {front:'AD shifts right. Effects?',sub:'Demand shock (positive)',back:'Real GDP rises, Price Level rises, Unemployment falls, Inflation rises. If past Y\u2086, creates inflationary gap.',formula:'GDP↑ PL↑ u%↓ π%↑'},
+  {front:'AD shifts left. Effects?',sub:'Demand shock (negative)',back:'Real GDP falls, Price Level falls, Unemployment rises, Inflation falls. Creates recessionary gap.',formula:'GDP↓ PL↓ u%↑ π%↓'},
+  {front:'SRAS shifts right. Effects?',sub:'Positive supply shock',back:'Real GDP rises AND Price Level falls. Lower costs = more output at lower prices. Best possible outcome!',formula:'GDP↑ PL↓ u%↓ π%↓'},
+  {front:'SRAS shifts left. Effects?',sub:'Negative supply shock',back:'Real GDP falls AND Price Level rises = STAGFLATION. Higher costs = less output at higher prices.',formula:'GDP↓ PL↑ u%↑ π%↑'},
+  {front:'What adjusts in self-correction?',sub:'The key mechanism',back:'WAGES are the key adjustment mechanism. In recessions, wages fall. In inflationary gaps, wages rise. This shifts SRAS.',formula:'Wages → SRAS → Y\u2086'},
+];
+
+let fcIndex=0;
+function showCard(){
+  const fc=flashcards[fcIndex];
+  document.getElementById('fc-front-title').textContent=fc.front;
+  document.getElementById('fc-front-sub').textContent=fc.sub;
+  document.getElementById('fc-back-text').textContent=fc.back;
+  document.getElementById('fc-back-formula').textContent=fc.formula;
+  document.getElementById('fcCounter').textContent=`${fcIndex+1} / ${flashcards.length}`;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('flashcard').classList.toggle('flipped')}
+function nextCard(){fcIndex=(fcIndex+1)%flashcards.length;showCard()}
+function prevCard(){fcIndex=(fcIndex-1+flashcards.length)%flashcards.length;showCard()}
+showCard();
+
+// ══════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════
+const quizData=[
+  {q:'LRAS is vertical because:',opts:['Input prices are sticky','All prices, including wages, are flexible in the long run','The government controls output','Firms always produce at full capacity'],correct:1,exp:'In the long run, all prices adjust. If PL rises, wages rise too, so real profits and output don\'t change.'},
+  {q:'Which of the following would shift LRAS to the RIGHT?',opts:['An increase in oil prices','A new minimum wage law','A breakthrough in AI technology','A decrease in consumer confidence'],correct:2,exp:'Technology increases the economy\'s productive capacity. Oil prices and minimum wage affect SRAS. Consumer confidence affects AD.'},
+  {q:'In long-run equilibrium, which curves intersect?',opts:['Only AD and SRAS','Only AD and LRAS','AD, SRAS, and LRAS all intersect','Only SRAS and LRAS'],correct:2,exp:'Long-run equilibrium requires all three curves to intersect at the same point at Y\u2086.'},
+  {q:'A recessionary gap exists when:',opts:['GDP > Y\u2086','GDP = Y\u2086','GDP < Y\u2086','LRAS shifts left'],correct:2,exp:'Recessionary gap means the economy is producing BELOW full employment (GDP < Y\u2086).'},
+  {q:'If SRAS shifts LEFT, what happens?',opts:['GDP rises, PL falls','GDP falls, PL falls','GDP rises, PL rises','GDP falls, PL rises (stagflation)'],correct:3,exp:'SRAS left means higher costs → less output (GDP↓) at higher prices (PL↑). This is stagflation.'},
+  {q:'How does a recessionary gap self-correct?',opts:['AD shifts right automatically','LRAS shifts left','Wages fall → SRAS shifts right → back to Y\u2086','The government must intervene'],correct:2,exp:'High unemployment → workers accept lower wages → per-unit costs fall → SRAS shifts right → economy returns to Y\u2086.'},
+  {q:'The 1970s oil crisis is an example of:',opts:['An inflationary gap closing','Stagflation from SRAS shifting left','AD shifting right causing growth','LRAS shifting right'],correct:1,exp:'OPEC cutting oil supply raised input costs, shifting SRAS left. Result: rising prices AND falling output = stagflation.'},
+  {q:'LRAS and SRAS both shift right when:',opts:['Oil prices decrease','Government increases spending','New technology increases productivity','Workers demand higher wages'],correct:2,exp:'Technology increases both capacity (LRAS right) AND lowers per-unit costs (SRAS right). Oil prices only affect SRAS.'},
+  {q:'An inflationary gap self-corrects because:',opts:['AD shifts left automatically','LRAS shifts right','Low unemployment → higher wages → SRAS shifts left → back to Y\u2086','Prices fall on their own'],correct:2,exp:'Very low unemployment gives workers bargaining power → wages rise → costs rise → SRAS shifts left → economy returns to Y\u2086 at a higher PL.'},
+  {q:'After self-correction from a recessionary gap, the price level will be:',opts:['Higher than before','The same as before','Lower than before','Impossible to determine'],correct:2,exp:'SRAS shifts right, which moves the economy back to Y\u2086 at a LOWER price level than the original equilibrium.'},
+];
+
+let quizScore=0,quizAnswered=0;
+function buildQuiz(){
+  const cont=document.getElementById('quizContainer');
+  cont.innerHTML='';
+  quizData.forEach((q,i)=>{
+    const div=document.createElement('div');
+    div.className='quiz-q';
+    let optsHtml=q.opts.map((o,j)=>`<div class="quiz-opt" data-q="${i}" data-o="${j}" onclick="checkAnswer(${i},${j},this)">${String.fromCharCode(65+j)}. ${o}</div>`).join('');
+    div.innerHTML=`<h4>${i+1}. ${q.q}</h4><div class="quiz-options">${optsHtml}</div><div class="quiz-explanation" id="exp-${i}"></div>`;
+    cont.appendChild(div);
+  });
+}
+function checkAnswer(qi,oi,el){
+  const opts=document.querySelectorAll(`.quiz-opt[data-q="${qi}"]`);
+  if(opts[0].classList.contains('locked'))return;
+  opts.forEach(o=>o.classList.add('locked'));
+  const q=quizData[qi];
+  if(oi===q.correct){el.classList.add('correct');quizScore++;}
+  else{el.classList.add('wrong');opts[q.correct].classList.add('correct');}
+  quizAnswered++;
+  const exp=document.getElementById(`exp-${qi}`);
+  exp.className=`quiz-explanation show ${oi===q.correct?'correct-exp':'wrong-exp'}`;
+  exp.textContent=(oi===q.correct?'✓ Correct! ':'✗ Incorrect. ')+q.exp;
+  if(quizAnswered===quizData.length){
+    setTimeout(()=>{
+      const sc=document.getElementById('quizScore');
+      sc.style.display='block';
+      sc.innerHTML=`<div class="quiz-score"><div class="big">${quizScore} / ${quizData.length}</div><p>${quizScore>=8?'Excellent! You\'re AP exam ready for this unit!':quizScore>=6?'Good job! Review the ones you missed.':'Keep studying! Review the flashcards and chains, then try again.'}</p><button class="quiz-reset" onclick="resetQuiz()">Try Again</button></div>`;
+      sc.scrollIntoView({behavior:'smooth'});
+    },500);
+  }
+}
+function resetQuiz(){quizScore=0;quizAnswered=0;document.getElementById('quizScore').style.display='none';buildQuiz();}
+buildQuiz();
+
+// ══════════════════════════════════════════
+// SCROLL ANIMATIONS & PROGRESS
+// ══════════════════════════════════════════
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('progressBar').style.width=pct+'%';
+  const sections=['lras','lras-game','adas','gaps','gap-game','self-correct','chains','flashcards','quiz'];
+  let current='';
+  sections.forEach(id=>{const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<200)current=id;});
+  document.querySelectorAll('.nav-links a').forEach(a=>{a.classList.toggle('active',a.getAttribute('data-target')===current)});
+});
+</script>
+</body>
+</html>
